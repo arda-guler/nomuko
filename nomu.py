@@ -74,10 +74,10 @@ def main():
         main_cam.zoom_in(2)
 
     def create_note(x, y):
-        new_note = Note(canvas_y_to_midi_num(y), 0.25, x/duration_to_length_factor)
+        new_note = Note(canvas_y_to_midi_num(y), float(duration_field.get("1.0","end-1c")), x/duration_to_length_factor)
         bar_found = False
         for bar in bars:
-            if bar.get_start_time() + bar.get_measure()/4 >= new_note.get_start_time() >= bar.get_start_time():
+            if bar.get_start_time() + 1 >= new_note.get_start_time() >= bar.get_start_time():
                 bar.add_note(new_note)
                 bar_found = True
                 break
@@ -92,12 +92,12 @@ def main():
 
             # if there are no bars at all, start with the very first
             if not last_bar:
-                last_bar = Bar(0)
+                last_bar = Bar(0, int(measure_field.get("1.0","end-1c")))
                 bars.append(last_bar)
 
             # keep creating bars until we reach the point where the note needs to be
             for i in range(int(new_note.get_start_time() - last_bar.get_start_time()) + 1):
-                new_bar = Bar(last_bar.get_start_time() + 1)
+                new_bar = Bar(last_bar.get_start_time() + 1, int(measure_field.get("1.0","end-1c")))
                 bars.append(new_bar)
                 last_bar = new_bar
 
@@ -115,7 +115,7 @@ def main():
 
         if closest_note:
             for bar in bars:
-                if bar.get_start_time() + bar.get_measure()/4 >= closest_note.get_start_time() >= bar.get_start_time():
+                if bar.get_start_time() + 1 >= closest_note.get_start_time() >= bar.get_start_time():
                     bar.delete_note(closest_note)
                     del closest_note
                     break
@@ -150,16 +150,21 @@ def main():
     click_op_cp.grid(row=1, column=6)
     click_op_dp.grid(row=2, column=6)
 
-    note1 = Note(45, 0.25, 0)
-    note2 = Note(46, 0.25, 0.25)
+    duration_field_label = Label(root, text="Note Duration")
+    duration_field_label.grid(row=16, column=1)
+    duration_field = Text(root, height=1, width=10)
+    duration_field.grid(row=17, column=1)
 
-    bar0 = Bar(0, 4, [note1, note2])
-    bar1 = Bar(1)
-    bar2 = Bar(2)
-    bar3 = Bar(3)
+    measure_field_label = Label(root, text="Bar Measure")
+    measure_field_label.grid(row=16, column=2)
+    measure_field = Text(root, height=1, width=10)
+    measure_field.grid(row=17, column=2)
+
+    # init first bar
+    bar0 = Bar(0)
 
     ## init variables
-    bars = [bar0, bar1, bar2, bar3]
+    bars = [bar0]
     main_cam = camera()
 
     note_creation_buffer = []
